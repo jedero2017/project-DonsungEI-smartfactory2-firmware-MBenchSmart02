@@ -10,7 +10,7 @@
 #include "ti_drivers_config.h"
 #include "modbus.h"
 
-int modbus_rcv_wait = 101; //5ms
+int modbus_rcv_wait = 100; //5ms
 
 UART_Handle modbus_pm_handle;
 UART_Handle modbus_tm_handle;

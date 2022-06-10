@@ -18,6 +18,7 @@ UART_Handle modbus_tm_handle;
 uint8_t modbus_send_buf[64];
 uint8_t modbus_recv_buf[64];
 
+//bb
 void modbus_init()
 {
     //open uart

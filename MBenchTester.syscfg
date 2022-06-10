@@ -1,0 +1,126 @@
+/**
+ * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
+ * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
+ * @cliArgs --device "MSP432E" --package "128 Pin QFP|32x32" --part "MSP432E401YTPDT" --product "simplelink_msp432e4_sdk@3.40.01.02"
+ * @versions {"tool":"1.11.0+2225"}
+ */
+
+/**
+ * Import the modules used in this configuration.
+ */
+const DriverLib = scripting.addModule("/ti/devices/DriverLib");
+const Board     = scripting.addModule("/ti/drivers/Board");
+const DMA       = scripting.addModule("/ti/drivers/DMA");
+const GPIO      = scripting.addModule("/ti/drivers/GPIO", {}, false);
+const GPIO1     = GPIO.addInstance();
+const GPIO2     = GPIO.addInstance();
+const GPIO3     = GPIO.addInstance();
+const GPIO4     = GPIO.addInstance();
+const GPIO5     = GPIO.addInstance();
+const GPIO6     = GPIO.addInstance();
+const GPIO7     = GPIO.addInstance();
+const GPIO8     = GPIO.addInstance();
+const GPIO9     = GPIO.addInstance();
+const Power     = scripting.addModule("/ti/drivers/Power");
+const RTOS      = scripting.addModule("/ti/drivers/RTOS");
+const Timer     = scripting.addModule("/ti/drivers/Timer", {}, false);
+const Timer1    = Timer.addInstance();
+const UART      = scripting.addModule("/ti/drivers/UART", {}, false);
+const UART1     = UART.addInstance();
+const UART2     = UART.addInstance();
+const UART3     = UART.addInstance();
+const General   = scripting.addModule("/ti/ndk/General");
+const SlNet     = scripting.addModule("/ti/net/SlNet");
+const SlNet1    = SlNet.addInstance();
+
+/**
+ * Write custom configuration values to the imported modules.
+ */
+GPIO1.$name           = "CONFIG_GPIO_PM485RDn";
+GPIO1.mode            = "Output";
+GPIO1.gpioPin.$assign = "PE0";
+
+GPIO2.$name           = "CONFIG_GPIO_TM485RDn";
+GPIO2.mode            = "Output";
+GPIO2.gpioPin.$assign = "PD6";
+
+GPIO3.$name           = "CONFIG_GPIO_FRONTLED0";
+GPIO3.mode            = "Output";
+GPIO3.gpioPin.$assign = "PP4";
+
+GPIO4.$name           = "CONFIG_GPIO_FRONTLED1";
+GPIO4.mode            = "Output";
+GPIO4.gpioPin.$assign = "PP5";
+
+GPIO5.$name           = "CONFIG_GPIO_ADCONVHS";
+GPIO5.mode            = "Output";
+GPIO5.gpioPin.$assign = "PQ4";
+
+GPIO6.$name           = "CONFIG_GPIO_ADCONVLS";
+GPIO6.mode            = "Output";
+GPIO6.gpioPin.$assign = "PP2";
+
+GPIO7.$name           = "CONFIG_GPIO_ADCRESET";
+GPIO7.mode            = "Output";
+GPIO7.gpioPin.$assign = "PP3";
+
+GPIO8.$name = "CONFIG_GPIO_DI0";
+
+GPIO9.$name           = "CONFIG_GPIO_DO0";
+GPIO9.mode            = "Output";
+GPIO9.gpioPin.$assign = "PK5";
+
+RTOS.timer0.resource.$assign = "Timer0";
+
+Timer1.$name     = "CONFIG_TIMER_0";
+Timer1.timerType = "32 Bits";
+
+UART1.$name = "CONFIG_UART_0";
+
+UART2.$name        = "CONFIG_UART_1";
+UART2.uart.$assign = "UART1";
+
+UART3.$name              = "CONFIG_UART_2";
+UART3.uart.$assign       = "UART2";
+UART3.uart.txPin.$assign = "PD5";
+UART3.uart.rxPin.$assign = "PD4";
+
+General.lowPriTaskDefStkSize      = 2048;
+General.normPriTaskDefStkSize     = 2048;
+General.highPriTaskDefStkSize     = 2048;
+General.networkOpenHook           = "netOpenHook";
+General.networkIPAddrHook         = "netIPAddrHook";
+General.tcpRxBufSize              = 1024;
+General.tcpRxBufLimit             = 2048;
+General.udpRxBufSize              = 2048;
+General.localIPAddrConfig         = "Enable Static IP Address";
+General.staticIPAddr              = "192.168.18.118";
+General.rebootHook                = "netRebootHook";
+General.gatewayIpAddr             = "192.168.18.1";
+General.initHook                  = "netInitHook";
+General.dhcpServReportFunction    = "";
+General.ndkThreadStkSize          = 4096;
+General.hostname                  = "RTC";
+General.domainName                = "RTC";
+General.tcpTxBufSize              = 1024;
+General.emac.$name                = "CONFIG_EMAC_0";
+General.emac.emac.$assign         = "ETHERNET0";
+General.emac.emac.led0Pin.$assign = "PK4";
+General.emac.emac.led1Pin.$assign = "PF4";
+
+SlNet1.$name             = "CONFIG_SLNET_0";
+SlNet1.id                = 2;
+SlNet1.enableSecureSocks = false;
+
+/**
+ * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
+ * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
+ * re-solve from scratch.
+ */
+GPIO8.gpioPin.$suggestSolution    = "PD0";
+Timer1.timer.$suggestSolution     = "Timer1";
+UART1.uart.$suggestSolution       = "UART0";
+UART1.uart.txPin.$suggestSolution = "PA1";
+UART1.uart.rxPin.$suggestSolution = "PA0";
+UART2.uart.txPin.$suggestSolution = "PB1";
+UART2.uart.rxPin.$suggestSolution = "PB0";

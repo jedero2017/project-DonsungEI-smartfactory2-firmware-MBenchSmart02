@@ -6,6 +6,7 @@
  */
 
 #include <stdbool.h>
+#include <string.h>
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/BIOS.h>
 
@@ -22,6 +23,7 @@
 #include "service.h"
 #include "modbus.h"
 #include "vse153.h"
+#include "uart.h"
 
 //Semaphore_Handle sem_service_send = NULL;
 Semaphore_Handle sem_data_send_timer = NULL;
@@ -266,6 +268,8 @@ bool service_get_temperature(float* arr_tem, int len)
     int i ;
     uint16_t temperature;
 
+//    return false;
+
     for(i = 0; i < len ; i++)
     {
         ret = modbus_read_input_reg(modbus_tm_handle, i + 1, 0x03E8, 1, data);
@@ -290,8 +294,11 @@ bool service_get_powermeter(float* arr_pow, int len)
 
     uint8_t buffer[20];
 
-    float voltage[3];
-    float current[3];
+    static float voltage[3] = {0,0,0};
+    static float current[3] = {0,0,0};
+    static double power = 0;
+
+//    return false;
 
     if(pm_type == 0) //low voltage
         pm_addr = 1;
@@ -299,57 +306,76 @@ bool service_get_powermeter(float* arr_pow, int len)
         pm_addr = 2;
 
     //voltage
-//    ret = modbus_read_input_reg(modbus_pm_handle, pm_addr, 0x200, 6, buffer);
-//
-//    if(ret == false)
-//        return false;
-//
-//    voltage[0] = read_big_endian_float(&buffer[0]);
-//    voltage[1] = read_big_endian_float(&buffer[4]);
-//    voltage[2] = read_big_endian_float(&buffer[8]);
+    ret = modbus_read_input_reg(modbus_pm_handle, pm_addr, 0x206, 6, buffer);
 
-
-    ret = modbus_read_input_reg(modbus_pm_handle, pm_addr, 0x800, 2, buffer);
-
-    if(ret == false)
-        return false;
-
-    voltage[0] = read_big_endian_float(&buffer[0]);
-    voltage[1] = read_big_endian_float(&buffer[0]);
-    voltage[2] = read_big_endian_float(&buffer[0]);
-
+    if(ret == true)
+    {
+        voltage[0] = read_big_endian_float(&buffer[0]);
+        voltage[1] = read_big_endian_float(&buffer[4]);
+        voltage[2] = read_big_endian_float(&buffer[8]);
+    }
 
     arr_pow[0] = (voltage[0] + voltage[1] + voltage[2])/3;
 
+
+    uint8_t msg[50];
+
+    sprintf(msg, "v = %0.1lf, %0.1lf, %0.1lf\r\n", voltage[0], voltage[1], voltage[2]);
+    uart0_msg(msg, strlen(msg));
+
     //current
     ret = modbus_read_input_reg(modbus_pm_handle, pm_addr, 0x20E, 6, buffer);
-    if(ret == false)
-        return false;
-
-    current[0] = read_big_endian_float(&buffer[0]);
-    current[1] = read_big_endian_float(&buffer[4]);
-    current[2] = read_big_endian_float(&buffer[8]);
-
-    arr_pow[1] = (current[0] + current[1] + current[2])/1.732;
+    if(ret == true)
+    {
+        current[0] = read_big_endian_float(&buffer[0]);
+        current[1] = read_big_endian_float(&buffer[4]);
+        current[2] = read_big_endian_float(&buffer[8]);
+    }
+    arr_pow[1] = (current[0] + current[1] + current[2])/3;
 
     //power
-    ret = modbus_read_input_reg(modbus_pm_handle, pm_addr, 0x424, 2, buffer);
-    if(ret == false)
-        return false;
+    ret = modbus_read_input_reg(modbus_pm_handle, pm_addr, 0x21A, 4, buffer);
+    if(ret == true)
+        power = read_big_endian_double(&buffer[0]);;
 
-    arr_pow[2] = read_big_endian_float(&buffer[0]);;
+    arr_pow[2] = (float)power/1000;
 
     return true;
 }
 
 bool service_get_vibration(float* arr_vib, int len)
 {
+//    return false;
+
     bool ret = vse153_get_data(arr_vib,  len);
     return ret;
 }
 
 bool service_get_speed(float* arr_speed, int len)
 {
+    bool ret;
+    uint8_t buffer[20];
+    uint32_t speed = 0;
+    uint8_t msg[50];
+
+    sprintf(msg, "get speed\r\n");
+    uart0_msg(msg, strlen(msg));
+//    return false;
+
+
+    ret = modbus_read_input_reg(modbus_tm_handle, 6, 0x3e9, 2, buffer);
+    if(ret == false)
+        return false;
+
+    *((uint8_t*)&speed) = buffer[1];
+    *((uint8_t*)&speed + 1) = buffer[0];
+    *((uint8_t*)&speed + 2) = buffer[3];
+    *((uint8_t*)&speed + 3) = buffer[2];
+
+    sprintf(msg, "%x, %x, %x, %x, %d\r\n", buffer[2], buffer[3], buffer[0], buffer[1], speed);
+    uart0_msg(msg, strlen(msg));
+
+    arr_speed[0] = (float)speed;
     return true;
 }
 
@@ -361,6 +387,22 @@ float read_big_endian_float(uint8_t* bytes)
     *((uint8_t*)&result + 1) = bytes[2];
     *((uint8_t*)&result + 2) = bytes[1];
     *((uint8_t*)&result + 3) = bytes[0];
+
+    return result;
+}
+
+double read_big_endian_double(uint8_t* bytes)
+{
+    double result;
+
+    *((uint8_t*)&result) = bytes[7];
+    *((uint8_t*)&result + 1) = bytes[6];
+    *((uint8_t*)&result + 2) = bytes[5];
+    *((uint8_t*)&result + 3) = bytes[4];
+    *((uint8_t*)&result + 4) = bytes[3];
+    *((uint8_t*)&result + 5) = bytes[2];
+    *((uint8_t*)&result + 6) = bytes[1];
+    *((uint8_t*)&result + 7) = bytes[0];
 
     return result;
 }

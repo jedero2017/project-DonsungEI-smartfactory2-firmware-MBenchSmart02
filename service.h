@@ -30,6 +30,7 @@ bool service_get_vibration(float* arr_vib, int len);
 bool service_get_speed(float* arr_speed, int len);
 
 float read_big_endian_float(uint8_t* bytes);
+double read_big_endian_double(uint8_t* bytes);
 
 
 #endif /* SERVICE_H_ */
